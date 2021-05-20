@@ -1,0 +1,23 @@
+{
+  "name": "compare-tf-webapp",
+  "version": "1.0.0",
+  "main": "index.js",
+  "repository": "https://github.com/yeosm0108/compare-tf-webapp",
+  "author": "yeosm0108 <yeosm0108@gmail.com>",
+  "license": "MIT",
+  "dependencies": {
+    "@types/express": "^4.17.11",
+    "express": "^4.17.1",
+    "path": "^0.12.7",
+    "typescript": "^4.2.4"
+  },
+  "scripts": {
+    "start": "npx ts-node index.ts",
+    "build": "npx tsc",
+    "dev": "nodemon --ext ts --exec ts-node index.ts"
+  },
+  "devDependencies": {
+    "nodemon": "^2.0.7",
+    "ts-node": "^9.1.1"
+  }
+}
