@@ -4,5 +4,4 @@ build
 python_venv
 .vscode
 
-
-*/yarn-error.log
+*.log
