@@ -1,38 +1,186 @@
 .App {
-  text-align: center;
-}
-
-.App-logo {
-  height: 40vmin;
-  pointer-events: none;
-}
-
-@media (prefers-reduced-motion: no-preference) {
-  .App-logo {
-    animation: App-logo-spin infinite 20s linear;
-  }
+	text-align: center;
+	display: flex;
+	flex-flow: column nowrap;
 }
 
 .App-header {
-  background-color: #282c34;
-  min-height: 100vh;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  font-size: calc(10px + 2vmin);
-  color: white;
+	flex: 0 1;
+	min-height: 4rem;
+	display: flex;
+	flex-direction: row;
+	align-items: center;
+	justify-content: stretch;
+	font-size: 1.2rem;
+	background-color: #282c34;
+	color: white;
+	user-select: none;
+}
+
+.App-title {
+	flex: 1 0;
+}
+
+.App-navigators {
+	display: flex;
+	flex-flow: row nowrap;
+	justify-content: flex-start;
+	align-items: center;
+}
+
+.App-navigators .Navigator {
+	margin: 0.5rem;
+	height: 3rem;
+	align-self: center;
+	float: left;
+}
+
+.App-navigators img {
+	height: inherit;
+}
+
+.App-body {
+	flex: 1;
+	background-color: #f4f4f4;
+	display: flex;
+	flex-direction: column;
+}
+
+.App-content {
+	flex: 1 2 0;
+	align-self: center;
+	margin: 1.2rem 5rem;
+	padding: 0.5rem;
+	max-width: 90%;
+	min-width: 0;
+	width: auto;
+	aspect-ratio: 1 / 1;
+	background-color: #ffffff;
+	border-color: #e0e0e0;
+	border-style: solid;
+	border-width: 1.5px;
+	border-radius: 4px;
+}
+
+.Chart-wrapper {
+	overflow-y: auto;
+}
+
+.App-input {
+	flex: 0 0 content;
+	padding: 1rem 0.5rem;
+	background-color: #ffffff;
+	border-top: 1.5px solid #e0e0e0;
 }
 
 .App-link {
-  color: #61dafb;
+	color: #61dafb;
 }
 
-@keyframes App-logo-spin {
-  from {
-    transform: rotate(0deg);
-  }
-  to {
-    transform: rotate(360deg);
-  }
+.Input-wrapper {
+	display: flex;
+	flex-flow: column wrap;
+	align-items: center;
+}
+
+.Input-wrapper button {
+	padding: 0.2rem;
+	margin: 0.2rem;
+	border-radius: 3px;
+	border-width: 1.5px;
+	border-style: solid;
+	border-color: #282c34;
+}
+
+.Input-item {
+	flex: 1;
+	display: flex;
+	flex-flow: row wrap;
+	justify-content: space-between;
+	align-self: center;
+	padding: 0.1rem;
+	width: 100%;
+}
+
+.Input-item:hover .Input-desc {
+	background-color: #3ea7fd44;
+}
+
+.Input-item:focus-within .Input-desc {
+	background-color: #3ea7fda2;
+	color: #ffffff;
+	font-weight: 700;
+}
+
+.Input-item:focus-within:hover .Input-desc {
+	background-color: #3ea7fdf1;
+}
+
+.Input-desc {
+	flex: 1 1 auto;
+	text-align: center;
+	padding: 0.15rem;
+	border-radius: 8px;
+	background-color: inherit;
+	mix-blend-mode: add;
+	transition-property: background-color font-weight;
+	transition-duration: 0.3s;
+	transition-timing-function: ease-in-out;
+	user-select: none;
+}
+
+.Input-field {
+	flex: 0 0 calc(85%);
+	max-width: 85%;
+	display: flex;
+}
+
+.Input-field input {
+	margin: 0 0.2rem;
+	padding: 0.2rem;
+	border-radius: 4px;
+	border-width: 1.5px;
+	border-style: solid;
+	flex: 1 1 auto;
+	min-width: 0;
+}
+
+.Input-submit {
+	display: flex;
+	flex-flow: row nowrap;
+	justify-content: center;
+	width: 80%;
+}
+
+.Input-submit button {
+	flex: 1 0;
+}
+
+@media screen and (max-width: 380px) {
+	.Input-item {
+		flex-flow: column wrap;
+	}
+
+	.Input-field {
+		flex: 0 0 calc(100%);
+		max-width: 100%;
+	}
+}
+
+@media screen and (max-width: 250px) {
+	.Input-submit {
+		flex-flow: column nowrap;
+	}
+}
+
+/* Chrome, Safari, Edge, Opera */
+input::-webkit-outer-spin-button,
+input::-webkit-inner-spin-button {
+	-webkit-appearance: none;
+	margin: 0;
+}
+
+/* Firefox */
+input[type="number"] {
+	-moz-appearance: textfield;
 }
