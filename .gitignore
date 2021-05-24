@@ -2,5 +2,7 @@ frontend/node_modules
 node_modules
 build
 python_venv
+.vscode
+
 
 */yarn-error.log
