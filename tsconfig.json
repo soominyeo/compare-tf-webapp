@@ -3,19 +3,26 @@
         "module": "commonjs",
         "baseUrl": "./",
         "outDir": "build",
-        "target": "es6",
+        "target": "es2017",
         "moduleResolution": "node",
         "esModuleInterop": true,
         "lib": [
-            "es6"
+            "es2017",
+            "DOM"
         ],
         "allowJs": true,
         "forceConsistentCasingInFileNames": true,
+        "typeRoots": [
+            "node_modules/@types",
+            "node_modules/web-ext-types"
+        ]
     },
     "include": [
         "**.ts"
     ],
     "exclude": [
-        "./frontend"
+        "./frontend",
+        "./node_modules",
+        "./build"
     ],
 }
