@@ -327,7 +327,7 @@ class Main extends Component {
 				const log = document.querySelector(".log");
 				log.innerHTML = `Elapsed time: ${result.time / 1000}s`;
 				if (result.totalTime)
-					log.innerHTML += `, Actual time: ${result.totalTIme / 1000}`;
+					log.innerHTML += `, Actual time: ${result.totalTime / 1000}`;
 				log.classList.remove("log-failure");
 			} else {
 				const log = document.querySelector(".log");

@@ -10,8 +10,10 @@ export class Server {
 	constructor(app: Express) {
 		this.app = app;
 		const apiRouter = Router();
+		const isProduction = !fs.existsSync(path.resolve('./build/frontend/index.html'))
+		console.log('isproduction', isProduction);
 
-		this.app.use(express.static(path.resolve("./") + "/build/frontend"));
+		this.app.use(express.static(path.join(path.resolve("./"), (isProduction?"/frontend":"/build/frontend"))));
 		this.app.use("/api", apiRouter);
 		apiRouter.use(express.json());
 
@@ -37,7 +39,9 @@ export class Server {
 
 		// route to react page
 		this.app.get("/*", (req: Request, res: Response): void => {
-			res.sendFile(path.resolve("./") + "/build/frontend/index.html");
+			const documentPath = path.resolve("./") + path.join((isProduction)?"/frontend":"/build/frontend" + "/index.html");
+			console.log(documentPath, path.resolve("./"), (isProduction)?"/frontend":"/build/frontend");
+			res.sendFile(documentPath);
 		});
 
 		this.app.get("*", (req: Request, res: Response): void => {
