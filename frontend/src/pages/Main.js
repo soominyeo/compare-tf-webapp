@@ -8,13 +8,39 @@ const scripts = {
 	CLI_JS: {
 		id: "client-js",
 		text: "Client",
-		run: (data) => GDLR(data),
+		run: (data, callback) => callback(GDLR(data)),
 	},
-	SERV_JS: { id: "server-js", text: "Server/JS", run: (data) => {} },
+	SERV_JS: {
+		id: "server-js",
+		text: "Server/JS",
+		run: (data, callback) => {
+			fetch("/api/gdlr/js", {
+				method: "POST",
+				headers: { "Content-Type": "application/json" },
+				body: JSON.stringify(data),
+				credentials: "same-origin",
+			})
+				.then((response) => response.json())
+				.then((result) => {
+					callback(result);
+				});
+		},
+	},
 	SERV_PYTHON: {
 		id: "server-python",
 		text: "Server/Python",
-		run: (data) => {},
+		run: (data, callback) => {
+			fetch("/api/gdlr/python", {
+				method: "POST",
+				headers: { "Content-Type": "application/json" },
+				body: JSON.stringify(data),
+				credentials: "same-origin",
+			})
+				.then((response) => response.json())
+				.then((result) => {
+					callback(result);
+				});
+		},
 	},
 };
 
@@ -23,28 +49,40 @@ class UserInput extends Component {
 		function: {
 			description: "함수",
 			length: 1,
+			type: "text",
+			checkRegex: /^(((\d*)|(-\d+))\s)*((-?\d*))$/,
 			props: {
-				placeholder: "a0 a1 a2 ...",
-				type: "text",
+				placeholder: "aN ... a2 a1 a0",
 			},
 		},
 		range: {
 			description: "범위",
 			length: 2,
+			type: "number",
 			props: {
 				placeholder: "1.0",
-				type: "number",
 				step: "any",
 			},
 		},
 		learningRate: {
 			description: "학습율",
 			length: 1,
+			type: "number",
 			props: {
 				placeholder: "0.001",
-				type: "number",
 				step: "any",
-				value: "0.001",
+				min: 0,
+				max: 1,
+			},
+		},
+		iteration: {
+			description: "반복",
+			length: 1,
+			type: "number",
+			props: {
+				placeholder: "500",
+				step: 1,
+				min: 0,
 			},
 		},
 	};
@@ -56,8 +94,8 @@ class UserInput extends Component {
 			data: Object.entries(UserInput.inputs).reduce((acc, pair) => {
 				const [key, value] = pair;
 				if (value.length > 1) acc[key] = [];
-				else if (value.props.type === "text") acc[key] = "";
-				else if (value.props.type === "number") acc[key] = 0;
+				else if (value.type === "text") acc[key] = "";
+				else if (value.type === "number") acc[key] = 0;
 				else acc[key] = undefined;
 
 				return acc;
@@ -87,13 +125,15 @@ class UserInput extends Component {
 			let input = UserInput.inputs[name];
 			inputs.push(
 				<InputItem
-					{...input.props}
+					type={input.type}
 					name={name}
-					key={name}
 					length={input.length}
+					checkRegex={input.checkRegex}
+					inputProps={input.props}
 					onValueChange={(value) => {
 						this.handleInputChange.bind(this)(name, value);
 					}}
+					key={name}
 				>
 					{input.description}
 				</InputItem>
@@ -130,21 +170,34 @@ class InputItem extends Component {
 	}
 
 	handleChange(i, event) {
-		const value = event.target.value.trim();
-		this.setState(
-			({ data }) => ({
-				data: [
-					...data.slice(0, i),
-					this.props.type === "number" ? parseInt(value, 10) : value,
-					...data.slice(i + 1),
-				],
-			}),
-			() => {
-				this.props.onValueChange(
-					this.props.length === 1 ? this.state.data[0] : this.state.data
-				);
-			}
-		);
+		let value = event.target.value.replace(/\s{2,}/, " ");
+		const regex = this.props.checkRegex || "";
+
+		if (!regex.test(value)) {
+			event.target.value = this.state.data[i];
+		} else {
+			event.target.value = value;
+
+			value = value.trim(/\s-?/);
+			this.setState(
+				({ data }) => ({
+					data: [
+						...data.slice(0, i),
+						this.props.type === "number"
+							? this.props.inputProps.step === "any"
+								? parseFloat(value)
+								: parseInt(value, 10)
+							: value,
+						...data.slice(i + 1),
+					],
+				}),
+				() => {
+					this.props.onValueChange(
+						this.props.length === 1 ? this.state.data[0] : this.state.data
+					);
+				}
+			);
+		}
 	}
 
 	render() {
@@ -152,10 +205,10 @@ class InputItem extends Component {
 		for (let i = 0; i < this.props.length; i++) {
 			inputs.push(
 				<input
-					name={this.props.name}
 					key={i}
+					name={this.props.name}
 					type={this.props.type}
-					placeholder={this.props.placeholder}
+					{...this.props.inputProps}
 					onChange={(event) => this.handleChange.bind(this)(i, event)}
 				/>
 			);
@@ -197,77 +250,93 @@ class Main extends Component {
 	}
 
 	handleSubmit(data, script) {
-		const result = script.run(data);
+		script.run({ ...data, iteration: 1000 }, (result) => {
+			console.log(result);
+			if (result.success) {
+				const graph = {
+					label:
+						"f(x) = " +
+						data.function
+							.split(/\s/)
+							.reverse()
+							.map((value, index) =>
+								index === 0 ? value : `${value}x^${index}`
+							)
+							.reverse()
+							.join(" + "),
+					data: result.graph.x.map((x, index) => {
+						return { x, y: result.graph.y[index] };
+					}),
+					pointBackgroundColor: "rgba(0,0,0,0)",
+					pointBorderColor: "rgba(0,0,0,0)",
+					backgroundColor: "rgba(0,0,0, 0.3)",
+					borderColor: "rgba(0,0,0,0.6)",
+				};
+				const optimum = {
+					label: "Optimum",
+					data: [{ x: result.optimum.x, y: result.optimum.y }],
+					pointRadius: 6,
+					pointHoverRadius: 8,
+					pointBackgroundColor: "rgba(0, 0, 0, 0.5)",
+				};
+				const regression = {
+					label:
+						"Regression: " +
+						`y = ${result.regression.slope.toFixed(
+							3
+						)}x + ${result.regression.intercept.toFixed(3)}`,
+					data: result.regression.x.map((x, index) => {
+						return { x, y: result.regression.y[index] };
+					}),
 
-		if (result.success) {
-			const graph = {
-				label:
-					"f(x) = " +
-					data.function
-						.split(/\s/)
-						.map((value, index) => (index === 0 ? value : `${value}x^${index}`))
-						.reverse()
-						.join(" + "),
-				data: result.graph.x.map((x, index) => {
-					return { x, y: result.graph.y[index] };
-				}),
-				pointBackgroundColor: "rgba(0,0,0,0)",
-				pointBorderColor: "rgba(0,0,0,0)",
-				backgroundColor: "rgba(0,0,0, 0.3)",
-				borderColor: "rgba(0,0,0,0.6)",
-			};
-			const optimum = {
-				label: "Optimum",
-				data: [{ x: result.optimum.x, y: result.optimum.y }],
-				pointRadius: 6,
-				pointHoverRadius: 8,
-				pointBackgroundColor: "rgba(0, 0, 0, 0.5)",
-			};
-			const regression = {
-				label:
-					"Regression: " +
-					`y = ${result.regression.slope.toFixed(
-						3
-					)}x + ${result.regression.intercept.toFixed(3)}`,
-				data: result.regression.x.map((x, index) => {
-					return { x, y: result.regression.y[index] };
-				}),
+					pointBackgroundColor: "rgba(0,0,0,0)",
+					pointBorderColor: "rgba(0,0,0,0)",
+					backgroundColor: "rgba(200,0,0, 0.3)",
+					borderColor: "rgba(200,0,0,0.6)",
+				};
 
-				pointBackgroundColor: "rgba(0,0,0,0)",
-				pointBorderColor: "rgba(0,0,0,0)",
-				backgroundColor: "rgba(200,0,0, 0.3)",
-				borderColor: "rgba(200,0,0,0.6)",
-			};
-
-			this.setState(({ options }) => ({
-				data: {
-					datasets: [graph, regression, optimum],
-				},
-				options: _.merge(options, {
-					scales: {
-						x: {
-							ticks: {
-								stepSize:
-									Math.floor((result.rangeY.max - result.rangeY.min) / 10) || 1,
-								suggestedMax: result.rangeX.max + 2,
-								suggestedMin: result.rangeX.min - 2,
-							},
-						},
-
-						y: {
-							ticks: {
-								stepSize:
-									Math.floor((result.rangeY.max - result.rangeY.min) / 10) || 1,
-								suggestedMax: result.rangeY.max + 2,
-								suggestedMin: result.rangeY.min - 2,
-							},
-						},
+				this.setState(({ options }) => ({
+					data: {
+						datasets: [graph, regression, optimum],
 					},
-				}),
-			}));
-		} else {
-			alert("execution failed!");
-		}
+					options: _.merge(options, {
+						scales: {
+							x: {
+								ticks: {
+									stepSize:
+										Math.floor((result.rangeY.max - result.rangeY.min) / 10) ||
+										1,
+									suggestedMax: result.rangeX.max + 2,
+									suggestedMin: result.rangeX.min - 2,
+								},
+							},
+
+							y: {
+								ticks: {
+									stepSize:
+										Math.floor((result.rangeY.max - result.rangeY.min) / 10) ||
+										1,
+									suggestedMax: result.rangeY.max + 2,
+									suggestedMin: result.rangeY.min - 2,
+								},
+							},
+						},
+					}),
+				}));
+
+				const log = document.querySelector(".log");
+				log.innerHTML = `Elapsed time: ${result.time / 1000}s`;
+				if (result.totalTime)
+					log.innerHTML += `, Actual time: ${result.totalTIme / 1000}`;
+				log.classList.remove("log-failure");
+			} else {
+				const log = document.querySelector(".log");
+				log.innerHTML = `Failed to Execute script: ${
+					result.error || "unknown error"
+				}`;
+				log.classList.add("log-failure");
+			}
+		});
 	}
 
 	render() {
@@ -282,6 +351,7 @@ class Main extends Component {
 						data={this.state.data}
 						options={this.state.options}
 					/>
+					<label className="log"></label>
 				</div>
 				<div className="App-input">
 					<UserInput onSubmit={this.handleSubmit.bind(this)} />
