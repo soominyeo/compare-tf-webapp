@@ -8,9 +8,9 @@ import os
 logging.disable(logging.WARNING)
 logging.disable(logging.ERROR)
 os.environ["TF_CPP_MIN_LOG_LEVEL"] = "3"
-os.environ["CUDA_VISIBLE_DEVICES"] = "-1"
 import tensorflow as tf
 import numpy as np
+tf.config.set_visible_devices([], 'GPU')
 defaults = {
     "iteration": 500,
     "alpha": 0.001,
