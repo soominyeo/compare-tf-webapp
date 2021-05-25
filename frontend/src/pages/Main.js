@@ -171,7 +171,7 @@ class InputItem extends Component {
 
 	handleChange(i, event) {
 		let value = event.target.value.replace(/\s{2,}/, " ");
-		const regex = this.props.checkRegex || "";
+		const regex = this.props.checkRegex || /.*/;
 
 		if (!regex.test(value)) {
 			event.target.value = this.state.data[i];
