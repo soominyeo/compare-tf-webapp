@@ -44,6 +44,7 @@
 	background-color: #f4f4f4;
 	display: flex;
 	flex-direction: column;
+	justify-content: flex-end;
 }
 
 .App-content {
@@ -54,7 +55,7 @@
 	max-width: 90%;
 	min-width: 0;
 	width: auto;
-	aspect-ratio: 1 / 1;
+	aspect-ratio: 6 / 7;
 	background-color: #ffffff;
 	border-color: #e0e0e0;
 	border-style: solid;
@@ -66,8 +67,13 @@
 	overflow-y: auto;
 }
 
+.Chart-wrapper canvas {
+	position: relative;
+	width: 100%;
+}
+
 .App-input {
-	flex: 0 0 content;
+	flex: 1 0 content;
 	padding: 1rem 0.5rem;
 	background-color: #ffffff;
 	border-top: 1.5px solid #e0e0e0;

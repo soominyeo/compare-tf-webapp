@@ -65,7 +65,7 @@ class UserInput extends Component {
 			},
 		},
 		learningRate: {
-			description: "학습율",
+			description: "학습률",
 			length: 1,
 			type: "number",
 			props: {
